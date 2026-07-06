@@ -18,12 +18,13 @@ class TransformerLM(nn.Module):
                 num_layers, 
                 num_heads, 
                 d_ff,
+                device,
                 rope):
       super().__init__()
-      self.embedding = Embedding(vocab_size, d_model)
-      self.tblocks = [TransformerBlock(d_model, num_heads, d_ff, rope) for _ in range(num_layers)]
-      self.norm = RMSNorm(d_model)
-      self.linear = Linear(d_model, vocab_size)
+      self.embedding = Embedding(vocab_size, d_model, device)
+      self.tblocks = nn.ModuleList([TransformerBlock(d_model, num_heads, d_ff, device, rope) for _ in range(num_layers)])
+      self.norm = RMSNorm(d_model, device=device)
+      self.linear = Linear(d_model, vocab_size, device)
       self.softmax = Softmax()
 
    def forward(self, in_indices: Int[Tensor, " batch_size sequence_length"]) -> Float[Tensor, " batch_size sequence_length vocab_size"]:

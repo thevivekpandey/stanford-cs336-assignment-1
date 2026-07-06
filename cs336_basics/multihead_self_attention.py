@@ -7,16 +7,16 @@ from torch.nn.init import trunc_normal_
 from scaled_dot_product_attention import ScaledDotProductAttention
 
 class MultiheadSelfAttentionSaved(nn.Module):
-   def __init__(self, d_model, num_heads, rope=None):
+   def __init__(self, d_model, num_heads, device, rope=None):
       super().__init__()
       self.d_model = d_model
       self.num_heads = num_heads
       self.rope = rope
 
-      self.W_q = nn.Parameter(torch.empty(d_model, d_model))
-      self.W_k = nn.Parameter(torch.empty(d_model, d_model))
-      self.W_v = nn.Parameter(torch.empty(d_model, d_model))
-      self.W_o = nn.Parameter(torch.empty(d_model, d_model))
+      self.W_q = nn.Parameter(torch.empty(d_model, d_model, device=device))
+      self.W_k = nn.Parameter(torch.empty(d_model, d_model, device=device))
+      self.W_v = nn.Parameter(torch.empty(d_model, d_model, device=device))
+      self.W_o = nn.Parameter(torch.empty(d_model, d_model, device=device))
 
       trunc_normal_(self.W_q, mean=0.0, std=1, a=-3.0, b=3.0)
       trunc_normal_(self.W_k, mean=0.0, std=1, a=-3.0, b=3.0)
@@ -80,17 +80,18 @@ class MultiheadSelfAttentionSaved(nn.Module):
       return mha
 
 class MultiheadSelfAttention(nn.Module):
-    def __init__(self, d_model, num_heads, rope=None):
+    def __init__(self, d_model, num_heads, device, rope=None):
         super().__init__()
         self.d_model = d_model
         self.num_heads = num_heads
+        self.device = device
         self.rope = rope
 
         # Initialize weight parameters
-        self.W_q = nn.Parameter(torch.empty(d_model, d_model))
-        self.W_k = nn.Parameter(torch.empty(d_model, d_model))
-        self.W_v = nn.Parameter(torch.empty(d_model, d_model))
-        self.W_o = nn.Parameter(torch.empty(d_model, d_model))
+        self.W_q = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        self.W_k = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        self.W_v = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        self.W_o = nn.Parameter(torch.empty(d_model, d_model, device=device))
 
         # Initialize with truncated normal
         trunc_normal_(self.W_q, mean=0.0, std=1, a=-3.0, b=3.0)
@@ -118,7 +119,7 @@ class MultiheadSelfAttention(nn.Module):
         k = rearrange(k, "... seq_len (nh hd) -> ... nh seq_len hd", nh=num_heads, hd=heads_dim)
         v = rearrange(v, "... seq_len (nh hd) -> ... nh seq_len hd", nh=num_heads, hd=heads_dim)
 
-        token_positions = torch.arange(seq_len)
+        token_positions = torch.arange(seq_len).to(self.device)
 
         if self.rope is not None:
            q = self.rope(q, token_positions)

@@ -7,11 +7,12 @@ class Embedding(nn.Module):
                       device: torch.device | None = None,
                       dtype: torch.dtype | None = None):
       super().__init__()
-      self.E = nn.Parameter(torch.empty(num_embeddings, embedding_dim))
+      self.device = device
+      self.E = nn.Parameter(torch.empty(num_embeddings, embedding_dim, device=device))
       nn.init.trunc_normal_(self.E, mean=0.0, std=1, a=-3.0, b=3.0)
 
    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
-      x = torch.stack([self.E[t] for t in token_ids], dim=0)
+      x = torch.stack([self.E[t] for t in token_ids], dim=0).to(self.device)
       return x
 
 if __name__ == "__main__":

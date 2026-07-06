@@ -48,6 +48,7 @@ class Train:
                              self.num_layers,
                              self.num_heads,
                              self.d_ff,
+                             device,
                              rope)
        optimizer = AdamW(model.parameters())
        train_losses, val_losses, train_accs, val_accs = [], [], [], []
@@ -65,20 +66,28 @@ class Train:
           loss.backward()
           optimizer.step()
 
+          if epoch % 10 == 0:
+              input_batch, target_batch = data_loading(val_data,
+                                                 self.batch_size,
+                                                 self.context_size,
+                                                 self.device)
+              logits = model(input_batch)
+              loss = cross_entropy(logits, target_batch)
+              print(f"epoch {epoch}: val loss = {loss.item()}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--d_model", type=int, default=32, required=False)
+    parser.add_argument("--d_model", type=int, default=512, required=False)
     parser.add_argument("--num_layers", type=int, default=4, required=False)
     parser.add_argument("--context_size", type=int, default=256, required=False)
-    parser.add_argument("--batch_size", type=int, default=32, required=False)
-    parser.add_argument("--num_steps", type=int, default=10, required=False)
-    parser.add_argument("--vocab_size", type=int, default=50257, required=False)
-    parser.add_argument("--d_ff", type=int, default=64, required=False)
-    parser.add_argument("--num_heads", type=int, default=2, required=False)
+    parser.add_argument("--batch_size", type=int, default=128, required=False)
+    parser.add_argument("--num_steps", type=int, default=1000, required=False)
+    parser.add_argument("--vocab_size", type=int, default=10000, required=False)
+    parser.add_argument("--d_ff", type=int, default=1344, required=False)
+    parser.add_argument("--num_heads", type=int, default=16, required=False)
     parser.add_argument("--theta", type=float, default=10000.0, required=False)
-    parser.add_argument("--max_seq_len", type=int, default=4, required=False)
-    parser.add_argument("--device", type=str, default="cpu", required=False)
+    parser.add_argument("--max_seq_len", type=int, default=1024, required=False)
+    parser.add_argument("--device", type=str, default="cuda", required=False)
     args = parser.parse_args()
 
     d_model = args.d_model
@@ -95,6 +104,7 @@ if __name__ == "__main__":
 
     tokenizer = Tokenizer.from_files("vocab.pkl", "merges.pkl", ["<|endoftext|>"])
     iterator = tokenizer.encode_iterable(open('TinyStoriesV2-GPT4-valid.txt'))
+    #iterator = tokenizer.encode_iterable(open('sample.txt'))
     arr = np.fromiter(iterator, dtype=int)
     t = Train(arr, d_model, num_layers, context_size, batch_size, num_steps, vocab_size, d_ff, num_heads, theta, max_seq_len, device)
     t.train()

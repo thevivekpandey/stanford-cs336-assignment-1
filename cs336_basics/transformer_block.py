@@ -12,6 +12,7 @@ class TransformerBlock(nn.Module):
    def __init__(self, d_model, 
                       num_heads, 
                       d_ff, 
+                      device,
                       rope):
       super().__init__()
       self.d_model = d_model
@@ -19,10 +20,10 @@ class TransformerBlock(nn.Module):
       self.d_ff = d_ff
       self.rope = rope
 
-      self.rms1 = RMSNorm(d_model)
-      self.mha = MultiheadSelfAttention(d_model, num_heads, rope)
-      self.rms2 = RMSNorm(d_model)
-      self.ff = SwiGLU(d_model, d_ff)
+      self.rms1 = RMSNorm(d_model, device=device)
+      self.mha = MultiheadSelfAttention(d_model, num_heads, device, rope)
+      self.rms2 = RMSNorm(d_model, device=device)
+      self.ff = SwiGLU(d_model, d_ff, device)
 
    def forward(self, in_features: Float[Tensor, " batch sequence_length d_model"]) -> Float[Tensor, " batch sequence_length d_model"]:
 

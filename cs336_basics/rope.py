@@ -12,13 +12,14 @@ class RoPE(nn.Module):
       self.theta = theta
       self.d_k = d_k
       self.max_seq_len = max_seq_len
+      self.device = device
       assert d_k % 2 == 0
 
    def forward(self, x: Float[Tensor, "... sequence_length d_k"], 
                      token_positions: Float[Tensor, "... sequence_length"]) -> Float[Tensor, "... sequence_length d_k"]:
       d_k = self.d_k
       i = torch.arange(d_k // 2)
-      theta = self.theta ** (-2 * i / d_k)
+      theta = self.theta ** (-2 * i / d_k).to(self.device)
       angles = token_positions.unsqueeze(-1) * theta
 
       cos = torch.cos(angles)

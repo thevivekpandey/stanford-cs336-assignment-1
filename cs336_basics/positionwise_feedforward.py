@@ -8,9 +8,9 @@ class SwiGLU(nn.Module):
                       device: torch.device | None=None,
                       dtype: torch.dtype | None=None):
       super().__init__()
-      self.W1 = nn.Parameter(torch.empty(d_ff, d_model))
-      self.W2 = nn.Parameter(torch.empty(d_model, d_ff))
-      self.W3 = nn.Parameter(torch.empty(d_ff, d_model))
+      self.W1 = nn.Parameter(torch.empty(d_ff, d_model, device=device))
+      self.W2 = nn.Parameter(torch.empty(d_model, d_ff, device=device))
+      self.W3 = nn.Parameter(torch.empty(d_ff, d_model, device=device))
 
       nn.init.trunc_normal_(self.W1, mean=0.0, std=1, a=-3.0, b=3.0)
       nn.init.trunc_normal_(self.W2, mean=0.0, std=1, a=-3.0, b=3.0)
