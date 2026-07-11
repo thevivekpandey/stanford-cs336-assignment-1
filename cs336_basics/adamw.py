@@ -3,6 +3,12 @@ from typing import Optional
 import torch
 import math
 
+def grad_norm(parameters):
+    """Global L2 norm over all parameter gradients (for logging/monitoring)."""
+    return torch.sqrt(sum(p.grad.detach().pow(2).sum()
+                          for p in parameters
+                          if p.grad is not None))
+
 class AdamW(torch.optim.Optimizer):
     def __init__(self, 
                  params, 
@@ -52,12 +58,3 @@ class AdamW(torch.optim.Optimizer):
                 state["t"] = t + 1
                 state["m"] = m
                 state["v"] = v
-                
-
-
-         
-
-            
-             
-
-

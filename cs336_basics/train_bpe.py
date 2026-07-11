@@ -47,7 +47,9 @@ def train_bpe(input_path: str,
          token_counts[tups] += 1
 
    merges: list[tuple[bytes, bytes]] = []
+   print("Starting")
    while len(vocab) < vocab_size:
+      print(len(vocab))
       # Every iteration, create pair count using token counts
       pair_counts:Counter[bytes, bytes] = Counter()
       for tpl, cnt in token_counts.items():

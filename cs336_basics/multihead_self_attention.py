@@ -5,6 +5,7 @@ from jaxtyping import Bool, Float, Int
 from torch import Tensor
 from torch.nn.init import trunc_normal_
 from scaled_dot_product_attention import ScaledDotProductAttention
+from linear import Linear
 
 class MultiheadSelfAttentionSaved(nn.Module):
    def __init__(self, d_model, num_heads, device, rope=None):
@@ -87,17 +88,21 @@ class MultiheadSelfAttention(nn.Module):
         self.device = device
         self.rope = rope
 
-        # Initialize weight parameters
-        self.W_q = nn.Parameter(torch.empty(d_model, d_model, device=device))
-        self.W_k = nn.Parameter(torch.empty(d_model, d_model, device=device))
-        self.W_v = nn.Parameter(torch.empty(d_model, d_model, device=device))
-        self.W_o = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        self.W_q = Linear(d_model, d_model, device)
+        self.W_k = Linear(d_model, d_model, device)
+        self.W_v = Linear(d_model, d_model, device)
+        self.W_o = Linear(d_model, d_model, device)
+        ## Initialize weight parameters
+        #self.W_q = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        #self.W_k = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        #self.W_v = nn.Parameter(torch.empty(d_model, d_model, device=device))
+        #self.W_o = nn.Parameter(torch.empty(d_model, d_model, device=device))
 
-        # Initialize with truncated normal
-        trunc_normal_(self.W_q, mean=0.0, std=1, a=-3.0, b=3.0)
-        trunc_normal_(self.W_k, mean=0.0, std=1, a=-3.0, b=3.0)
-        trunc_normal_(self.W_v, mean=0.0, std=1, a=-3.0, b=3.0)
-        trunc_normal_(self.W_o, mean=0.0, std=1, a=-3.0, b=3.0)
+        ## Initialize with truncated normal
+        #trunc_normal_(self.W_q, mean=0.0, std=1, a=-3.0, b=3.0)
+        #trunc_normal_(self.W_k, mean=0.0, std=1, a=-3.0, b=3.0)
+        #trunc_normal_(self.W_v, mean=0.0, std=1, a=-3.0, b=3.0)
+        #trunc_normal_(self.W_o, mean=0.0, std=1, a=-3.0, b=3.0)
 
     def forward(self, x: Float[Tensor, "... sequence_length d_model"]) -> Float[Tensor, "... sequence_length d_model"]:
         d_model = self.d_model
@@ -109,9 +114,12 @@ class MultiheadSelfAttention(nn.Module):
         # The weight matrices are (d_model, d_model) with PyTorch convention:
         # rows = output features, columns = input features
         # So we need x @ W.T for the projection
-        q = einsum(x, self.W_q.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
-        k = einsum(x, self.W_k.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
-        v = einsum(x, self.W_v.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        #q = einsum(x, self.W_q.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        #k = einsum(x, self.W_k.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        #v = einsum(x, self.W_v.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        q = self.W_q(x)
+        k = self.W_k(x)
+        v = self.W_v(x)
 
         # Step 2: Reshape to split the d_model dimension into num_heads separate heads
         # From (..., seq_len, d_model) to (..., num_heads, seq_len, heads_dim)
@@ -137,7 +145,8 @@ class MultiheadSelfAttention(nn.Module):
         attention = rearrange(attention, "... nh seq_len hd -> ... seq_len (nh hd)")
 
         # Step 6: Apply output projection
-        output = einsum(attention, self.W_o.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        #output = einsum(attention, self.W_o.T, "... seq_len d_model, d_model d_model_out -> ... seq_len d_model_out")
+        output = self.W_o(attention)
 
         return output
 

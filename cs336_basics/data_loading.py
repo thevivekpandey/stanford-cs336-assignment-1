@@ -9,8 +9,8 @@ def data_loading(x: np.ndarray,
    offsets = np.arange(context_length)
    indices = start_indices[:, None] + offsets[None, :]
    target_indices = indices + 1
-   a = torch.tensor(x[indices])
-   b = torch.tensor(x[target_indices])
+   a = torch.tensor(x[indices].astype(np.int64))
+   b = torch.tensor(x[target_indices].astype(np.int64))
    a = a.to(device)
    b = b.to(device)
    return a, b

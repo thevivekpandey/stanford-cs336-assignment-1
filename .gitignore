@@ -161,3 +161,12 @@ cython_debug/
 
 .ruff_cache/
 *.zip
+
+# Training artifacts
+checkpoints/
+*.pt
+wandb/
+
+#any ext or npy file
+*.txt
+*.npy
