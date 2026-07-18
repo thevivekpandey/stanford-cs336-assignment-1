@@ -147,10 +147,10 @@ if __name__ == "__main__":
     parser.add_argument("--d_model", type=int, default=512, required=False)
     parser.add_argument("--num_layers", type=int, default=4, required=False)
     parser.add_argument("--context_size", type=int, default=256, required=False)
-    parser.add_argument("--batch_size", type=int, default=150 , required=False)
-    parser.add_argument("--num_steps", type=int, default=10000, required=False)
+    parser.add_argument("--batch_size", type=int, default=128 , required=False)
+    parser.add_argument("--num_steps", type=int, default=5000, required=False)
     parser.add_argument("--vocab_size", type=int, default=10000, required=False)
-    parser.add_argument("--d_ff", type=int, default=1344, required=False)
+    parser.add_argument("--d_ff", type=int, default=2048, required=False)
     parser.add_argument("--num_heads", type=int, default=16, required=False)
     parser.add_argument("--theta", type=float, default=10000.0, required=False)
     parser.add_argument("--max_seq_len", type=int, default=1024, required=False)
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     wandb.init(
         entity="thevivekpandey-personal",
         project="stanford-cs336",
-        name=f"lr={args.lr:g}-bs={args.batch_size}",
+        name=f"silu",
         group=args.group,
         config={
             **vars(args),
